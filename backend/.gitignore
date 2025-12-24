@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+
+# Environment variables
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# GCP credentials
+*.json
+!requirements.txt
+credentials.json
+service-account-key.json
+
+# Temporary files
+*.tmp
+*.log
+temp/
+tmp/
+
+# OS
+.DS_Store
+Thumbs.db
+
