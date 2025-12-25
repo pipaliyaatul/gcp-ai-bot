@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
-import './Login.css';
+import './Login.scss';
 
-const Login = () => {
+const Login: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -16,7 +16,7 @@ const Login = () => {
   const DUMMY_USERNAME = 'admin';
   const DUMMY_PASSWORD = 'admin123';
 
-  const handleDummyLogin = async (e) => {
+  const handleDummyLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     
@@ -47,7 +47,7 @@ const Login = () => {
       } else {
         throw new Error('No auth URL received');
       }
-    } catch (err) {
+    } catch (err: any) {
       setLoading(false);
       if (err.response?.status === 400) {
         setError(err.response.data.detail || 'Google OAuth is not configured. Please use the dummy login (admin/admin123) or configure OAuth credentials.');

@@ -38,28 +38,28 @@
 
 .form-group {
   margin-bottom: 20px;
-}
 
-.form-group label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: 500;
-  color: #333;
-  font-size: 14px;
-}
+  label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #333;
+    font-size: 14px;
+  }
 
-.form-group input {
-  width: 100%;
-  padding: 12px 16px;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 16px;
-  transition: border-color 0.3s;
-}
+  input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.3s;
 
-.form-group input:focus {
-  outline: none;
-  border-color: #667eea;
+    &:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+  }
 }
 
 .error-message {
@@ -85,32 +85,32 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-}
 
-.btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 }
 
 .btn-primary {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-}
 
-.btn-primary:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  }
 }
 
 .btn-google {
   background: white;
   color: #333;
   border: 2px solid #e0e0e0;
-}
 
-.btn-google:hover:not(:disabled) {
-  border-color: #4285F4;
-  background: #f8f9fa;
+  &:hover:not(:disabled) {
+    border-color: #4285F4;
+    background: #f8f9fa;
+  }
 }
 
 .google-icon {
@@ -125,17 +125,17 @@
   margin: 24px 0;
   color: #999;
   font-size: 14px;
-}
 
-.divider::before,
-.divider::after {
-  content: '';
-  flex: 1;
-  border-bottom: 1px solid #e0e0e0;
-}
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid #e0e0e0;
+  }
 
-.divider span {
-  padding: 0 16px;
+  span {
+    padding: 0 16px;
+  }
 }
 
 .login-info {
@@ -146,13 +146,13 @@
   font-size: 12px;
   color: #666;
   text-align: center;
-}
 
-.login-info p {
-  margin: 4px 0;
-}
+  p {
+    margin: 4px 0;
+  }
 
-.login-info strong {
-  color: #333;
+  strong {
+    color: #333;
+  }
 }
 

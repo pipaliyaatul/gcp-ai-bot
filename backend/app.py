@@ -193,6 +193,72 @@ async def upload_file(
         logger.error(f"Upload error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error processing file: {str(e)}")
 
+@app.get("/api/documents")
+async def list_documents(
+    x_oauth_credentials: Optional[str] = Header(None, alias="X-OAuth-Credentials"),
+    days: int = 30
+):
+    """List documents from Google Drive created in the last N days"""
+    try:
+        # Parse OAuth credentials if provided
+        oauth_credentials = None
+        if x_oauth_credentials:
+            try:
+                creds_dict = json.loads(urllib.parse.unquote(x_oauth_credentials))
+                oauth_credentials = auth_service.get_credentials_from_dict(creds_dict)
+                logger.info("Using OAuth credentials for Drive file listing")
+            except Exception as e:
+                logger.warning(f"Could not parse OAuth credentials: {e}")
+                raise HTTPException(
+                    status_code=401,
+                    detail="Google Drive access requires authentication. Please log in with Google OAuth first."
+                )
+        else:
+            raise HTTPException(
+                status_code=401,
+                detail="Google Drive access requires authentication. Please log in with Google OAuth first."
+            )
+        
+        # List files from Drive
+        try:
+            files = await drive_service.list_recent_files(
+                oauth_credentials=oauth_credentials,
+                days=days
+            )
+        except Exception as drive_error:
+            logger.error(f"Drive API error: {str(drive_error)}")
+            # Check if it's a scope/permission error
+            error_str = str(drive_error).lower()
+            if 'insufficient' in error_str or 'permission' in error_str or 'scope' in error_str:
+                raise HTTPException(
+                    status_code=403,
+                    detail="Insufficient permissions to access Google Drive. Please ensure you granted Drive access during login."
+                )
+            elif 'invalid' in error_str or 'expired' in error_str or 'token' in error_str:
+                raise HTTPException(
+                    status_code=401,
+                    detail="Authentication expired. Please log out and log in again with Google OAuth."
+                )
+            else:
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"Error accessing Google Drive: {str(drive_error)}"
+                )
+        
+        return JSONResponse({
+            "success": True,
+            "files": files,
+            "count": len(files)
+        })
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error listing documents: {str(e)}")
+        import traceback
+        logger.error(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=f"Error listing documents: {str(e)}")
+
 @app.get("/auth/google")
 async def google_auth():
     """Initiate Google OAuth flow"""

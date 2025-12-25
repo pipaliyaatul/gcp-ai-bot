@@ -1,7 +1,8 @@
 import os
 import logging
 import tempfile
-from typing import Tuple, Optional
+from datetime import datetime, timedelta
+from typing import Tuple, Optional, List, Dict
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
@@ -14,6 +15,8 @@ class DriveService:
     """Handles Google Drive operations for uploading and sharing documents"""
     
     def __init__(self):
+        # Using drive.file scope - allows access to files created by this app
+        # For broader access, use 'https://www.googleapis.com/auth/drive.readonly'
         self.scopes = ['https://www.googleapis.com/auth/drive.file']
         self.credentials_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
         self.shared_drive_id = os.getenv('GOOGLE_SHARED_DRIVE_ID')  # Optional: Shared Drive ID
@@ -148,4 +151,78 @@ class DriveService:
     def get_download_link(self, file_id: str) -> str:
         """Get direct download link for a file"""
         return f"https://drive.google.com/uc?export=download&id={file_id}"
+    
+    async def list_recent_files(
+        self,
+        oauth_credentials: Optional[Credentials] = None,
+        days: int = 30
+    ) -> List[Dict]:
+        """
+        List files from Google Drive created in the last N days
+        
+        Args:
+            oauth_credentials: OAuth credentials from authenticated user
+            days: Number of days to look back (default: 30)
+        
+        Returns:
+            List of file dictionaries with id, name, createdTime, webViewLink, etc.
+        """
+        try:
+            drive_service = self._get_drive_service(oauth_credentials)
+            
+            # Calculate date threshold
+            threshold_date = datetime.utcnow() - timedelta(days=days)
+            threshold_time = threshold_date.isoformat() + 'Z'
+            
+            # Query for files created in the last N days
+            # Filter for RFP summary files (files with "RFP_Summary" in name)
+            # Using drive.file scope, we can only access files created by this app
+            query = f"name contains 'RFP_Summary' and createdTime >= '{threshold_time}' and trashed=false"
+            
+            # List files
+            results = drive_service.files().list(
+                q=query,
+                pageSize=100,
+                fields="files(id, name, createdTime, modifiedTime, webViewLink, mimeType, size)",
+                orderBy="modifiedTime desc",
+                supportsAllDrives=True,
+                includeItemsFromAllDrives=True
+            ).execute()
+            
+            files = results.get('files', [])
+            
+            # Format files for response
+            formatted_files = []
+            for file in files:
+                file_id = file.get('id')
+                mime_type = file.get('mimeType', '')
+                
+                # Determine edit link based on file type
+                # For .docx files, we can open in Google Docs viewer or convert
+                # For Google Docs format, use direct edit link
+                if 'document' in mime_type or 'wordprocessingml' in mime_type:
+                    # Try to open in Google Docs (will convert if needed)
+                    edit_link = f"https://docs.google.com/document/d/{file_id}/edit"
+                else:
+                    # For other types, use view link
+                    edit_link = file.get('webViewLink', f"https://drive.google.com/file/d/{file_id}/view")
+                
+                formatted_files.append({
+                    'id': file_id,
+                    'name': file.get('name'),
+                    'createdTime': file.get('createdTime'),
+                    'modifiedTime': file.get('modifiedTime'),
+                    'webViewLink': file.get('webViewLink'),
+                    'mimeType': mime_type,
+                    'size': file.get('size'),
+                    'downloadLink': self.get_download_link(file_id),
+                    'editLink': edit_link
+                })
+            
+            logger.info(f"Found {len(formatted_files)} files from the last {days} days")
+            return formatted_files
+            
+        except Exception as e:
+            logger.error(f"Error listing files from Drive: {str(e)}")
+            raise
 

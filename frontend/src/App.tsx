@@ -2,10 +2,11 @@ import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useSearchParams } from 'react-router-dom';
 import Login from './components/Login';
 import ChatInterface from './components/ChatInterface';
+import Documents from './components/Documents';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import './App.css';
+import './App.scss';
 
-const OAuthCallback = () => {
+const OAuthCallback: React.FC = () => {
   const [searchParams] = useSearchParams();
   const { login } = useAuth();
   
@@ -26,12 +27,26 @@ const OAuthCallback = () => {
   return <Navigate to="/chat" />;
 };
 
-const PrivateRoute = ({ children }) => {
-  const { isAuthenticated } = useAuth();
-  return isAuthenticated ? children : <Navigate to="/login" />;
+const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isAuthenticated, isLoading } = useAuth();
+  
+  if (isLoading) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh' 
+      }}>
+        <div>Loading...</div>
+      </div>
+    );
+  }
+  
+  return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
 };
 
-function App() {
+const App: React.FC = () => {
   return (
     <AuthProvider>
       <Router>
@@ -47,13 +62,21 @@ function App() {
                 </PrivateRoute>
               }
             />
+            <Route
+              path="/documents"
+              element={
+                <PrivateRoute>
+                  <Documents />
+                </PrivateRoute>
+              }
+            />
             <Route path="/" element={<Navigate to="/login" />} />
           </Routes>
         </div>
       </Router>
     </AuthProvider>
   );
-}
+};
 
 export default App;
 
