@@ -57,23 +57,51 @@ cors_origins = [
 if frontend_url not in cors_origins:
     cors_origins.append(frontend_url)
 
-# Also allow any Cloud Run frontend URL (for flexibility)
-# Extract domain from frontend URL and allow all subdomains
+# Handle Cloud Run URLs - allow all *.run.app origins for flexibility
+# This is needed because frontend and backend might be on different subdomains
+from urllib.parse import urlparse
+cors_origin_regex = None
 if "run.app" in frontend_url or "cloudfunctions.net" in frontend_url:
-    from urllib.parse import urlparse
     parsed = urlparse(frontend_url)
-    # Allow the exact URL and any subdomain variations
-    cors_origins.append(f"{parsed.scheme}://{parsed.netloc}")
+    # Allow the exact frontend URL
+    if f"{parsed.scheme}://{parsed.netloc}" not in cors_origins:
+        cors_origins.append(f"{parsed.scheme}://{parsed.netloc}")
+    
+    # Use regex to allow any *.run.app origin (for Cloud Run flexibility)
+    # This allows requests from any Cloud Run service
+    if "run.app" in parsed.netloc:
+        cors_origin_regex = r"https://.*\.run\.app"
+
+# Also check if we're running on Cloud Run and allow requests from the same domain
+# This handles cases where the frontend URL might not be set correctly
+backend_url = os.getenv("BACKEND_URL", "")
+if backend_url and "run.app" in backend_url:
+    parsed_backend = urlparse(backend_url)
+    backend_origin = f"{parsed_backend.scheme}://{parsed_backend.netloc}"
+    if backend_origin not in cors_origins:
+        cors_origins.append(backend_origin)
 
 logger.info(f"CORS allowed origins: {cors_origins}")
+if cors_origin_regex:
+    logger.info(f"CORS origin regex: {cors_origin_regex}")
 
-# CORS middleware
+# CORS middleware with explicit configuration
+cors_middleware_kwargs = {
+    "allow_origins": cors_origins,
+    "allow_credentials": True,
+    "allow_methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"],
+    "allow_headers": ["*"],
+    "expose_headers": ["*"],
+    "max_age": 3600,
+}
+
+# Add regex pattern if we're on Cloud Run
+if cors_origin_regex:
+    cors_middleware_kwargs["allow_origin_regex"] = cors_origin_regex
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=cors_origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    **cors_middleware_kwargs
 )
 
 # Initialize services
