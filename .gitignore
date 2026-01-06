@@ -2,6 +2,7 @@
 .env
 .env.local
 .env.*.local
+!.env.example
 
 # Python
 __pycache__/
@@ -19,14 +20,28 @@ node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+lerna-debug.log*
+jspm_packages/
+web_modules/
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+yarn-integrity
 
 # Build outputs
 build/
 dist/
 *.egg-info/
+*.tgz
+*.tsbuildinfo
 
 # IDE
 .vscode/
+.vscode-test
 .idea/
 *.swp
 *.swo
@@ -43,8 +58,87 @@ service-account-key.json
 *.log
 temp/
 tmp/
+.cache
+.parcel-cache
+.nyc_output
+
+# Coverage
+coverage
+*.lcov
+lib-cov
+
+# Logs
+logs
+*.pid
+*.seed
+*.pid.lock
 
 # OS
 .DS_Store
 Thumbs.db
 
+# TypeScript
+*.tsbuildinfo
+
+# Next.js
+.next
+out
+
+# Nuxt.js
+.nuxt
+
+# Gatsby
+.cache/
+
+# Vuepress
+.vuepress/dist
+.vuepress/cache
+
+# Sveltekit
+.svelte-kit/
+
+# Vite
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
+
+# Docusaurus
+.docusaurus
+
+# Serverless
+.serverless/
+
+# FuseBox
+.fusebox/
+
+# DynamoDB Local
+.dynamodb/
+
+# Firebase
+.firebase/
+
+# TernJS
+.tern-port
+
+# Grunt
+.grunt
+
+# Bower
+bower_components
+
+# Lock files
+.lock-wscript
+
+# REPL history
+.node_repl_history
+
+# Diagnostic reports
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# ESLint cache
+.eslintcache
+
+# Stylelint cache
+.stylelintcache
+
+# Optional npm cache
+.npm
