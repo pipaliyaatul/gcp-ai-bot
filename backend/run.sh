@@ -20,6 +20,12 @@ if ! python -c "import fastapi" 2>/dev/null; then
     pip install -r requirements.txt
 fi
 
+# Ensure all dependencies are up to date, especially google-cloud-storage for Transfer Manager
+echo "Updating dependencies to ensure compatibility..."
+pip install --upgrade pip > /dev/null 2>&1
+pip install --upgrade -r requirements.txt > /dev/null 2>&1
+echo "Dependencies up to date."
+
 # Run the application
 echo "Starting backend server..."
 python app.py
